@@ -6,6 +6,7 @@ var logger = require('morgan');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var convRouter = require('./routes/conversation');
 
 var app = express();
 
@@ -19,8 +20,21 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+/*
+
+/ -> html
+
+/users/register (email,pass) -> {status,cookie}
+/users/login (email,pass) -> {status,cookie}
+
+add monetization here (credits type ke)
+/conversation/start (cookie) -> {status,reply}
+/conversation/next (cookie) -> {status,reply}
+*/
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
+app.use('/conversation',convRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
