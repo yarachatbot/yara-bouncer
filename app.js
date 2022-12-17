@@ -7,6 +7,8 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var convRouter = require('./routes/conversation');
+var db = require('./middleware/db.js');
+var auth = require('./middleware/auth.js');
 
 var app = express();
 
@@ -20,16 +22,34 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+
+db.checkConnection();
+
 /*
 
 / -> html
 
-/users/register (email,pass) -> {status,cookie}
-/users/login (email,pass) -> {status,cookie}
 
-add monetization here (credits type ke)
-/conversation/start (cookie) -> {status,reply}
-/conversation/next (cookie) -> {status,reply}
+/users/register (email,password,name) -> {success,jwt,error}
+--------localhost:3000/users/register?type=legacy&email=testemail&name=testname&password=testpass  -> {"success": true, "jwt": "xxx.yyy.zzz", "error":null}
+
+/users/login (email,pass) -> {success,jwt,error}
+--------localhost:3000/users/register?type=legacy&password=testpass&email=testemail  -> {"success": true, "jwt": "xxx.yyy.zzz", "error":null}
+
+
+/conversation/start ()+auth -> {success,reply,error}
+--------localhost:3000/conversation/start (with headers.authorization = "bearer xxx.yyy.zzz") -> {
+    "success": true,
+    "reply": "<MIND API> Hi, how are you doing today? I am chotu, how can I help you?",
+    "error": null
+}
+
+/conversation/next (message)+auth -> {success,reply,error}
+--------localhost:3000/conversation/next?message=imsodepressed (with headers.authorization = "bearer xxx.yyy.zzz") -> {
+    "success": true,
+    "reply": "<MIND API> Sorry to hear that babababa",
+    "error": null
+}
 */
 
 app.use('/', indexRouter);

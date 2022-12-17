@@ -1,4 +1,7 @@
 var express = require('express');
+var auth = require('../middleware/auth.js');
+var dataentry = require('../middleware/dataentry.js')
+
 var router = express.Router();
 
 /* GET users listing. */
@@ -7,47 +10,59 @@ router.get('/', function(req, res, next) {
 });
 
 // maybe put this in another file, containing all auth related functions, and import from there
-function verifyLogin(creds){
-  // verify if logged in.
-  return true;
-}
-
 router.get('/start', function(req, res, next) {
-  // get user id
+  var rvalue = {'success':false,'reply':null,error:null};
+
   // verify that it's logged in
-  if(!verifyLogin(req.creds))
-    res.send('Not Logged In');
+  var email = auth.verifyJWT(req.headers.authorization.split(' ')[1]);
+  console.log('Verified: ',email);
+  if(!email)
+  {
+    rvalue.error = "Invalid Login";
+  }
+  else
+  {
+    //get starting reply from mind
+    firstReply = "<MIND API> Hi, how are you doing today? I am chotu, how can I help you?";
 
-  // create a new conversation entry in conv table in db
-  // save new conv_id to users table in db
+    // onsuccess
+    rvalue.reply = firstReply;
+    rvalue.success = true;
 
-  // on success, get starting reply from mind
-  firstReply = "<MIND API> Hi, how are you doing today? I am chotu, how can I help you?";
-
-  // onsuccess
-  res.send({'status':'Success','reply':firstReply});
+    // creating new conv, and doing data entry shit
+    dataentry.startConv(email,firstReply);
+  }
+  console.log('Sending rvalue from router/start');
+  res.send(rvalue);
 });
 
 router.get('/next',function(req, res, next) {
-  // get user id
-  creds = req.creds || "unverified";
+  var rvalue = {'success':false,'reply':null,error:null};
 
   // verify that it's logged in
-  if(!verifyLogin(creds))
+  var email = auth.verifyJWT(req.headers.authorization.split(' ')[1]);
+  if(!email)
   {
-    res.send('Not Logged In');
-    return;
+    rvalue.error = "Invalid Login";
   }
+  else
+  {
+    // create a new conversation entry in conv table in db
+    // save new conv_id to users table in db
 
-  // Data entry stuff
-  // get conv_id from users table in db
-  // save new message to conv table in db
+    var rquery = req.query;
+    var message = rquery.message;
+    // on success, get starting reply from mind
+    nextReply = "<MIND API> Sorry to hear: "+message;
 
-  // on success, get starting reply from MIND
-  nextReply = "<MIND API> I'm sorry to hear that babababa";
+    // onsuccess
+    rvalue.reply = nextReply;
+    rvalue.success = true;
 
-  // onsuccess
-  res.send({'status':'Success','reply':nextReply});
+    dataentry.nextConv(email,message,nextReply);
+  }
+  
+  res.send(rvalue);
 });
 
 module.exports = router;
