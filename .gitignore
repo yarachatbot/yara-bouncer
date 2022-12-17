@@ -1,4 +1,4 @@
-node-modules/
+node_modules
 .gitignore
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
