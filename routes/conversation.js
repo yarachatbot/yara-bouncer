@@ -6,7 +6,7 @@ var router = express.Router();
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
+  res.send('Usage: ');
 });
 
 // maybe put this in another file, containing all auth related functions, and import from there
@@ -14,7 +14,8 @@ router.get('/start', function(req, res, next) {
   var rvalue = {'success':false,'reply':null,error:null};
 
   // verify that it's logged in
-  var email = auth.verifyJWT(req.headers.authorization.split(' ')[1]);
+  var token = (req.headers.authorization || "bearer dumbass").split(' ')[1]
+  var email = auth.verifyJWT();
   console.log('Verified: ',email);
   if(!email)
   {
