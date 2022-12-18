@@ -11,10 +11,10 @@ var db = require('./db.js');
 
 // need to safeguard this function at all costs
 //iska return value has  a success field, a jwt field, and an error field.
-function createJWT(email){
+function createJWT(user_id){
 	rvalue = {'success':false, 'jwt':null, 'error':null};
 
-	const token = jwt.sign({ email:email },jwt_key,{expiresIn: "2h",});
+	const token = jwt.sign({ user_id:user_id },jwt_key,{expiresIn: "2h",});
 	rvalue.jwt = token;
 	rvalue.success = true;
 
@@ -22,12 +22,12 @@ function createJWT(email){
 	return rvalue;
 }
 
-//returns email id of the guy
+//returns user id of the guy
 function verifyJWT(token){
 	try
 	{
 		const decoded = jwt.verify(token, jwt_key);
-		return decoded.email;
+		return decoded.user_id;
 	}
 	catch(err)
 	{
@@ -71,7 +71,22 @@ async function legacyLogin(email,password) {
     });
 
   if(await bcrypt.compare(password,db_hashpass))
-    rvalue = createJWT(email);
+  {
+    var idflag = false;
+    var db_user_id = null;
+
+    await db.query("SELECT id FROM Users Where email=?",[email])
+    .then(results=>{
+        db_user_id = results[0].id;
+        idflag = true;
+    })
+    .catch(error=>{
+        console.log('Error occured: ',error);
+    });
+
+    if(idflag)
+      rvalue = createJWT(db_user_id);
+  }
   else
     rvalue.error = "Incorrect Password";
 

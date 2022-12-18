@@ -6,7 +6,7 @@ var router = express.Router();
 
 /* GET users listing. */
 router.get('/', function(req, res, next) {
-  res.send('Usage: ');
+  res.send('For usage, check comments in app.js');
 });
 
 // maybe put this in another file, containing all auth related functions, and import from there
@@ -15,9 +15,9 @@ router.get('/start', function(req, res, next) {
 
   // verify that it's logged in
   var token = (req.headers.authorization || "bearer dumbass").split(' ')[1]
-  var email = auth.verifyJWT();
-  console.log('Verified: ',email);
-  if(!email)
+  var user_id = auth.verifyJWT(token);
+  console.log('Verified: ',user_id);
+  if(!user_id)
   {
     rvalue.error = "Invalid Login";
   }
@@ -31,7 +31,7 @@ router.get('/start', function(req, res, next) {
     rvalue.success = true;
 
     // creating new conv, and doing data entry shit
-    dataentry.startConv(email,firstReply);
+    dataentry.startConv(user_id,firstReply);
   }
   console.log('Sending rvalue from router/start');
   res.send(rvalue);
@@ -41,8 +41,8 @@ router.get('/next',function(req, res, next) {
   var rvalue = {'success':false,'reply':null,error:null};
 
   // verify that it's logged in
-  var email = auth.verifyJWT(req.headers.authorization.split(' ')[1]);
-  if(!email)
+  var user_id = auth.verifyJWT(req.headers.authorization.split(' ')[1]);
+  if(!user_id)
   {
     rvalue.error = "Invalid Login";
   }
@@ -60,7 +60,7 @@ router.get('/next',function(req, res, next) {
     rvalue.reply = nextReply;
     rvalue.success = true;
 
-    dataentry.nextConv(email,message,nextReply);
+    dataentry.nextConv(user_id,message,nextReply);
   }
   
   res.send(rvalue);

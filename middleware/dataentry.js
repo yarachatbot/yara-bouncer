@@ -1,12 +1,12 @@
 var db = require('./db.js');
 
-async function startConv(email,firstReply)
+async function startConv(user_id,firstReply)
 {
 	db.checkConnection();
 	rvalue = {"success":false,"conv_id":null,"error":null}
 
 	var insertflag = false, selectflag = false;
-	await db.query("INSERT INTO Conversations (text,user_email) VALUE (?,?)",[JSON.stringify({"mind":[firstReply],"client":[]}),email])
+	await db.query("INSERT INTO Conversations (text,user_id) VALUE (?,?)",[JSON.stringify({"mind":[firstReply],"client":[]}),user_id])
 	.then(response=>{
 		insertflag = true;
 	})
@@ -17,7 +17,7 @@ async function startConv(email,firstReply)
 
 	if(insertflag)
 	{
-		await db.query("SELECT id FROM Conversations WHERE text->>'$.client'='[]' AND user_email=?",[email])
+		await db.query("SELECT id FROM Conversations WHERE text->>'$.client'='[]' AND user_id=?",[user_id])
 		.then(response=>{
 			selectflag = true;
 			rvalue.conv_id = response[response.length-1].id;
@@ -30,7 +30,7 @@ async function startConv(email,firstReply)
 
 	if(selectflag)
 	{
-		await db.query("UPDATE Users SET last_conv_id=? WHERE email=?",[rvalue.conv_id,email])
+		await db.query("UPDATE Users SET last_conv_id=? WHERE id=?",[rvalue.conv_id,user_id])
 		.then(response=>{
 			rvalue.success = true;
 		})
@@ -43,13 +43,13 @@ async function startConv(email,firstReply)
 	return rvalue;
 }
 
-async function nextConv(email,message,nextReply)
+async function nextConv(user_id,message,nextReply)
 {
 	db.checkConnection();
 	rvalue = {"success":false,"conv_id":null,"error":null}
 
 	var selectflag=false,updateflag=false;
-	await db.query("SELECT last_conv_id FROM Users WHERE email=?",[email])
+	await db.query("SELECT last_conv_id FROM Users WHERE id=?",[user_id])
 	.then(response=>{
 		rvalue.conv_id = response[0].last_conv_id;
 		selectflag = true;
