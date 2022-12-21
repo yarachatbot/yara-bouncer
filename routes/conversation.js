@@ -1,6 +1,7 @@
 var express = require('express');
 var auth = require('../middleware/auth.js');
-var dataentry = require('../middleware/dataentry.js')
+var dataentry = require('../middleware/dataentry.js');
+var mind = require('../middleware/mindaccess.js');
 
 var router = express.Router();
 
@@ -10,8 +11,8 @@ router.get('/', function(req, res, next) {
 });
 
 // maybe put this in another file, containing all auth related functions, and import from there
-router.get('/start', function(req, res, next) {
-  var rvalue = {'success':false,'reply':null,error:null};
+router.get('/start', async function(req, res, next) {
+  var rvalue = {'success':false,'reply':null,'error':null};
 
   // verify that it's logged in
   var token = (req.headers.authorization || "bearer dumbass").split(' ')[1]
@@ -23,22 +24,16 @@ router.get('/start', function(req, res, next) {
   }
   else
   {
-    //get starting reply from mind
-    firstReply = "<MIND API> Hi, how are you doing today? I am chotu, how can I help you?";
-
-    // onsuccess
-    rvalue.reply = firstReply;
-    rvalue.success = true;
-
-    // creating new conv, and doing data entry shit
-    dataentry.startConv(user_id,firstReply);
+    rvalue = await mind.start(user_id);
+    if(rvalue.success)
+      dataentry.startConv(user_id,rvalue.reply);
   }
   console.log('Sending rvalue from router/start');
   res.send(rvalue);
 });
 
-router.get('/next',function(req, res, next) {
-  var rvalue = {'success':false,'reply':null,error:null};
+router.get('/next',async function(req, res, next) {
+  var rvalue = {'success':false,'reply':null,'error':null};
 
   // verify that it's logged in
   var user_id = auth.verifyJWT(req.headers.authorization.split(' ')[1]);
@@ -54,13 +49,10 @@ router.get('/next',function(req, res, next) {
     var rquery = req.query;
     var message = rquery.message;
     // on success, get starting reply from mind
-    nextReply = "<MIND API> Sorry to hear: "+message;
 
-    // onsuccess
-    rvalue.reply = nextReply;
-    rvalue.success = true;
-
-    dataentry.nextConv(user_id,message,nextReply);
+    rvalue = await mind.next(user_id,message);
+    if(rvalue.success)
+      dataentry.nextConv(user_id,message,rvalue.reply);
   }
   
   res.send(rvalue);

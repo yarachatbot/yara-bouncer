@@ -10,6 +10,11 @@ var convRouter = require('./routes/conversation');
 var db = require('./middleware/db.js');
 var auth = require('./middleware/auth.js');
 
+process.on('uncaughtException', function (err) {
+  console.error(err);
+  console.log("Node NOT Exiting...");
+});
+
 var app = express();
 
 // view engine setup
