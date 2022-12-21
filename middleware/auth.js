@@ -61,9 +61,10 @@ async function legacyLogin(email,password) {
   db.checkConnection();
   rvalue = {'success':false, 'jwt':null, 'error':null};
   
-  var db_hashpass = null;
+  var db_hashpass = "";
   await db.query("SELECT hashpass FROM Users WHERE email=?",[email])
     .then(function(results){
+      if(results.length>0 && 'hashpass' in results[0])
         db_hashpass = results[0].hashpass;
     })
     .catch(function(error){
