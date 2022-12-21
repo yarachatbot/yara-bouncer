@@ -13,6 +13,8 @@
     <label>Password: <input type="password" name="password" required></label><br>
     <input type="submit" value="Register">
   </form>
+   <!-- Display an error message when the registration was unsuccessful -->
+  <div id="errorMessage" style="display: none; color: red;">An error occured. Maybe an account with this email already exists.</div>
   <script>
     const registerForm = document.getElementById('registerForm');
     registerForm.addEventListener('submit', function(event) {
@@ -21,14 +23,22 @@
       const email = registerForm.elements.email.value;
       const password = registerForm.elements.password.value;
       // Send a POST request to the /users/register route with the name, email, and password as query parameters
-      fetch('/users/register?name=' + name + '&email=' + email + '&password=' + password, { method: 'GET' }).then(response => response.json())
-.then(data => {
-// Save the JWT authentication token in local storage
-localStorage.setItem('jwt', data.jwt);
-// Redirect to the chat page
-window.location.href = '/chat';
-});
-});
+      fetch('/users/register?name=' + name + '&email=' + email + '&password=' + password, { method: 'GET' })
+      .then(response => response.json())
+      .then(data => {
+        /// Check if the registration was successful
+        if (data.success) {
+          // Save the JWT authentication token in local storage
+          localStorage.setItem('jwt', data.jwt);
+          // Redirect to the chat page
+          window.location.href = '/chat';
+        } else {
+          // Display the error message
+          const errorMessage = document.getElementById('errorMessage');
+          errorMessage.style.display = 'block';
+        }
+      });
+    });
 </script>
 
 </body>

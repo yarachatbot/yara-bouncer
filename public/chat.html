@@ -2,9 +2,38 @@
 <html>
 <head>
   <title>Chatbot</title>
+  <style>
+    /* Style the chat container */
+    #chatContainer {
+      width: 50%;
+      min-height: 400px;
+      max-height: 80%;
+      margin: auto;
+      overflow-y: scroll;
+      border: 1px solid #ccc;
+      padding: 10px;
+      font-family: sans-serif;
+      font-size: 16px;
+    }
+    /* Style the chat messages */
+    #chatContainer p {
+      margin: 10px 0;
+    }
+    /* Style the user messages */
+    #chatContainer p.user {
+      text-align: right;
+      color: blue;
+    }
+    /* Style the chatbot messages */
+    #chatContainer p.chatbot {
+      text-align: left;
+      color: green;
+    }
+  </style>
 </head>
 <body>
   <button id="logoutButton">Logout</button>
+  <div style="text-align: center;">
   <div id="chatContainer">
     <!-- Display previous chat messages here -->
   </div>
@@ -12,6 +41,7 @@
     <label>Message: <input type="text" name="message" required></label><br>
     <input type="submit" value="Send">
   </form>
+</div>
   <script>
     const logoutButton = document.getElementById('logoutButton');
     logoutButton.addEventListener('click', function() {
@@ -24,6 +54,9 @@
     chatForm.addEventListener('submit', function(event) {
       event.preventDefault();
       const message = chatForm.elements.message.value;
+      chatContainer.innerHTML += '<p class="user">' + message + '</p>';
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+
       // Get the JWT authentication token from local storage
       const jwt = localStorage.getItem('jwt');
       // Send a POST request to the /conversation/next route with the message as a query parameter and the JWT as a bearer token
@@ -35,9 +68,12 @@
       })
         .then(response => response.json())
         .then(data => {
-          // Display the reply from the chatbot in the chat container
+          // Display the user's message and the reply from the chatbot in the chat container
           const chatContainer = document.getElementById('chatContainer');
-          chatContainer.innerHTML += '<p>' + data.reply + '</p>';
+          
+          chatContainer.innerHTML += '<p class="chatbot">' + data.reply + '</p>';
+          // Scroll to the bottom of the chat container
+          chatContainer.scrollTop = chatContainer.scrollHeight;
           // Clear the message input field
           chatForm.elements.message.value = '';
         });
@@ -52,7 +88,9 @@
       .then(data => {
         // Display the first message from the chatbot in the chat container
         const chatContainer = document.getElementById('chatContainer');
-        chatContainer.innerHTML += '<p>' + data.reply + '</p>';
+        chatContainer.innerHTML += '<p class="chatbot">' + data.reply + '</p>';
+        // Scroll to the bottom of the chat container
+        chatContainer.scrollTop = chatContainer.scrollHeight;
       });
   </script>
 </body>

@@ -5,33 +5,36 @@
 </head>
 <body>
   <h1>Welcome to the Chatbot</h1>
-  <p>Enter your email and password to login, or click the register button to create a new account:</p>
+  <p>Enter your email and password to login, or click the <a href="/register">register</a> link to create a new account:</p>
   <form id="loginForm">
     <label>Email: <input type="email" name="email" required></label><br>
     <label>Password: <input type="password" name="password" required></label><br>
     <input type="submit" value="Login">
-    <button id="registerButton">Register</button>
   </form>
+  <!-- Display an error message when the login was unsuccessful -->
+  <div id="errorMessage" style="display: none; color: red;">Invalid email or password.</div>
   <script>
     const loginForm = document.getElementById('loginForm');
     loginForm.addEventListener('submit', function(event) {
       event.preventDefault();
       const email = loginForm.elements.email.value;
       const password = loginForm.elements.password.value;
-      // Send a POST request to the /users/login route with the email and password as query parameters
-      fetch('/users/login?email=' + email + '&password=' + password, { method: 'GET' })
+      // Send a GET request to the /users/login route with the email and password as query parameters
+      fetch('/users/login?email=' + email + '&password=' + password)
         .then(response => response.json())
         .then(data => {
-          // Save the JWT authentication token in local storage
-          localStorage.setItem('jwt', data.jwt);
-          // Redirect to the chat page
-          window.location.href = '/chat';
+          // Check if the login was successful
+          if (data.success) {
+            // Save the JWT authentication token in local storage
+            localStorage.setItem('jwt', data.jwt);
+            // Redirect to the chat page
+            window.location.href = '/chat';
+          } else {
+            // Display the error message
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'block';
+          }
         });
-    });
-    const registerButton = document.getElementById('registerButton');
-    registerButton.addEventListener('click', function() {
-      // Redirect to the register page
-      window.location.href = '/register';
     });
   </script>
 </body>
