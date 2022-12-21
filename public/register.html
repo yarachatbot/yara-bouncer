@@ -1,0 +1,35 @@
+
+<!-- Register page -->
+<html>
+<head>
+  <title>Chatbot Register</title>
+</head>
+<body>
+  <h1>Welcome to the Chatbot</h1>
+  <p>Enter your name, email, and password to create a new account:</p>
+  <form id="registerForm">
+    <label>Name: <input type="text" name="name" required></label><br>
+    <label>Email: <input type="email" name="email" required></label><br>
+    <label>Password: <input type="password" name="password" required></label><br>
+    <input type="submit" value="Register">
+  </form>
+  <script>
+    const registerForm = document.getElementById('registerForm');
+    registerForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const name = registerForm.elements.name.value;
+      const email = registerForm.elements.email.value;
+      const password = registerForm.elements.password.value;
+      // Send a POST request to the /users/register route with the name, email, and password as query parameters
+      fetch('/users/register?name=' + name + '&email=' + email + '&password=' + password, { method: 'GET' }).then(response => response.json())
+.then(data => {
+// Save the JWT authentication token in local storage
+localStorage.setItem('jwt', data.jwt);
+// Redirect to the chat page
+window.location.href = '/chat';
+});
+});
+</script>
+
+</body>
+</html>

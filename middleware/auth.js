@@ -63,33 +63,38 @@ async function legacyLogin(email,password) {
   
   var db_hashpass = "";
   await db.query("SELECT hashpass FROM Users WHERE email=?",[email])
-    .then(function(results){
+    .then(async function(results){
       if(results.length>0 && 'hashpass' in results[0])
+      {
         db_hashpass = results[0].hashpass;
+
+        if(await bcrypt.compare(password,db_hashpass))
+        {
+          var idflag = false;
+          var db_user_id = null;
+
+          await db.query("SELECT id FROM Users Where email=?",[email])
+          .then(results=>{
+              db_user_id = results[0].id;
+              idflag = true;
+          })
+          .catch(error=>{
+              console.log('Error occured: ',error);
+          });
+
+          if(idflag)
+            rvalue = createJWT(db_user_id);
+        }
+        else
+          rvalue.error = "Incorrect Password";
+      }
+      else
+        rvalue.error = "Unregistered email";
     })
     .catch(function(error){
       console.log('Error occured: ',error);
     });
 
-  if(await bcrypt.compare(password,db_hashpass))
-  {
-    var idflag = false;
-    var db_user_id = null;
-
-    await db.query("SELECT id FROM Users Where email=?",[email])
-    .then(results=>{
-        db_user_id = results[0].id;
-        idflag = true;
-    })
-    .catch(error=>{
-        console.log('Error occured: ',error);
-    });
-
-    if(idflag)
-      rvalue = createJWT(db_user_id);
-  }
-  else
-    rvalue.error = "Incorrect Password";
 
   console.log('sending rvalue from legacyLogin');
   return rvalue;

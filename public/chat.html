@@ -1,0 +1,59 @@
+<!-- Chat page -->
+<html>
+<head>
+  <title>Chatbot</title>
+</head>
+<body>
+  <button id="logoutButton">Logout</button>
+  <div id="chatContainer">
+    <!-- Display previous chat messages here -->
+  </div>
+  <form id="chatForm">
+    <label>Message: <input type="text" name="message" required></label><br>
+    <input type="submit" value="Send">
+  </form>
+  <script>
+    const logoutButton = document.getElementById('logoutButton');
+    logoutButton.addEventListener('click', function() {
+      // Clear the JWT authentication token from local storage
+      localStorage.removeItem('jwt');
+      // Redirect to the login page
+      window.location.href = '/';
+    });
+    const chatForm = document.getElementById('chatForm');
+    chatForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const message = chatForm.elements.message.value;
+      // Get the JWT authentication token from local storage
+      const jwt = localStorage.getItem('jwt');
+      // Send a POST request to the /conversation/next route with the message as a query parameter and the JWT as a bearer token
+      fetch('/conversation/next?message=' + message, {
+        method: 'GET',
+        headers: {
+          'Authorization': 'bearer ' + jwt
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          // Display the reply from the chatbot in the chat container
+          const chatContainer = document.getElementById('chatContainer');
+          chatContainer.innerHTML += '<p>' + data.reply + '</p>';
+          // Clear the message input field
+          chatForm.elements.message.value = '';
+        });
+    });
+    // Send a GET request to the /conversation/start route with the JWT as a bearer token to start the conversation
+    fetch('/conversation/start', {
+      headers: {
+        'Authorization': 'bearer ' + localStorage.getItem('jwt')
+      }
+    })
+      .then(response => response.json())
+      .then(data => {
+        // Display the first message from the chatbot in the chat container
+        const chatContainer = document.getElementById('chatContainer');
+        chatContainer.innerHTML += '<p>' + data.reply + '</p>';
+      });
+  </script>
+</body>
+</html>

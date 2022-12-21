@@ -57,7 +57,18 @@ db.checkConnection();
 }
 */
 
-app.use('/', indexRouter);
+app.get('/', function(req, res) {
+  res.sendFile(__dirname + '/public/login.html');
+});
+
+app.get('/register', function(req, res) {
+  res.sendFile(__dirname + '/public/register.html');
+});
+
+app.get('/chat', function(req, res) {
+  res.sendFile(__dirname + '/public/chat.html');
+});
+
 app.use('/users', usersRouter);
 app.use('/conversation',convRouter);
 
