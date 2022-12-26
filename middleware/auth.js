@@ -100,6 +100,21 @@ async function legacyLogin(email,password) {
   return rvalue;
 }
 
+async function tpLogin(){
+  // get google OAuth token from user
+  // verify token using google API
+  // get email ID of user from google API / OAuth token
+  // fetch corresponding user_id from db
+  // sign and send back jwt for future authorization
+}
+
+async function tpRegister(){
+  // get google token from user
+  // verify token by google API
+  // save email ID to db
+  // return tpLogin(token)
+}
+
 exports.legacyLogin = legacyLogin;
 exports.legacyRegister = legacyRegister;
 exports.verifyJWT = verifyJWT;
